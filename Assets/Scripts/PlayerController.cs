@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>(); 
         halfSpeed = 1f;
     }
 
@@ -22,17 +22,45 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         // Get the input for movement
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
+        //float horizontalInput = Input.GetAxis("Horizontal");
 
-        // Calculate the movement direction
-        Vector3 moveDirection = new Vector3(horizontalInput, 0f, verticalInput).normalized;
+        float horizontalInput = 0f;
+        
+        if (Input.GetKey(KeyCode.A))
+        {
+            horizontalInput = -1f;
+        }
+        else if (Input.GetKey(KeyCode.D))
+        {
+            horizontalInput = 1f;
+        }
+
+        float verticalInput = 0f;
+        
+        if (Input.GetKey(KeyCode.W))
+        {
+            verticalInput = 1f;
+        }
+        else if (Input.GetKey(KeyCode.S))
+        {
+            verticalInput = -1f;
+        }
+        
+        
 
 
-        var targetRotation = Quaternion.LookRotation(moveDirection);
 
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 5f * Time.deltaTime);
-        rb.AddForce(moveDirection * moveSpeed);
+        if (horizontalInput < 0 || horizontalInput > 0 || verticalInput < 0 || verticalInput > 0)
+        {
+            // Calculate the movement direction
+            Vector3 moveDirection = new Vector3(horizontalInput, 0f, verticalInput).normalized;
+            var targetRotation = Quaternion.LookRotation(moveDirection);
+
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 5f * Time.deltaTime);
+            rb.AddForce(moveDirection * moveSpeed);
+            
+        }
+      
 
         
 
