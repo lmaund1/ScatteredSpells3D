@@ -4,12 +4,16 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-
+    public GameObject bullet;
     public float moveSpeed = 5f;
+    public float fireRate = 10f;
 
     private Rigidbody rb;
     public Animator animator;
     private float halfSpeed;
+    private GameObject theBullet;
+    
+    private float lastFire = 0f;
 
     // Start is called before the first frame update
     void Start()
@@ -21,6 +25,19 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (lastFire <= 0)
+        {
+            if (Input.GetKey(KeyCode.Return))
+            {
+                Instantiate<GameObject>(bullet, transform.position, transform.rotation);
+                lastFire = fireRate;
+            }
+        }
+        else
+        {
+            lastFire -= Time.deltaTime;
+        }
+
         // Get the input for movement
         //float horizontalInput = Input.GetAxis("Horizontal");
 

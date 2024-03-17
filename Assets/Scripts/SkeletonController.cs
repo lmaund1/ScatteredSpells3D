@@ -6,15 +6,19 @@ public class SkeletonController : MonoBehaviour
 {
     public GameObject player;
     public Transform[] wayPoints;
-    public float moveSpeed = 1f;
-    public float sightRange = 10f;
+    public float walkSpeed = 4f;
+    public float runSpeed = 8f;
+    public float sightRadius = 10f;
+    public float horizontalFoV = 0f;
+    public float verticalFoV = 0f;
+    public LayerMask playerMask;
 
     private int currentWayPointIndex = 0;
     private Animator animator;
 
     private enum SkeletonState
     {
-        idle, walking, engaging, attacking, dying, dead 
+        idle, walking, engaging, running, attacking, dying, dead 
     }
 
     private SkeletonState skeletonState = SkeletonState.idle;
@@ -35,8 +39,24 @@ public class SkeletonController : MonoBehaviour
                 if (IsPlayerVisible())
                 {
                     skeletonState = SkeletonState.engaging;
-                    animator.SetBool("isEngaging", true);
+                    animator.SetBool("isIdle", false);
+                    animator.SetBool("isWalking", false);
+                    animator.SetTrigger("isEngaging");
                 }
+                break;
+
+            case SkeletonState.engaging:
+                if(animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
+                {
+                    skeletonState = SkeletonState.running;
+                    animator.SetBool("isRunning", true);
+                    animator.SetBool("isWalking", false);
+                    animator.SetBool("isIdle", false);
+                }
+                break;
+
+            case SkeletonState.running:
+               RunToPlayer();
                 break;
 
             default:
@@ -45,7 +65,6 @@ public class SkeletonController : MonoBehaviour
                     animator.SetBool("isWalking", true);
                     skeletonState = SkeletonState.walking;
                 }
-                IsPlayerVisible();
                 break;
         }
         // 
@@ -58,11 +77,11 @@ public class SkeletonController : MonoBehaviour
     private void MoveToWayPoint()
     {
         Vector3 targetPosition = wayPoints[currentWayPointIndex].position;
-        float step = moveSpeed * Time.deltaTime;
+        float step = walkSpeed * Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, targetPosition, step);
         Vector3 directionToWayPoint = targetPosition - transform.position;
         Quaternion targetRotation = Quaternion.LookRotation(directionToWayPoint);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, moveSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, walkSpeed * Time.deltaTime);
         
 
         // check if waypoint reached
@@ -73,22 +92,31 @@ public class SkeletonController : MonoBehaviour
         }
     }
 
+    private bool RunToPlayer()
+    {
+        bool caughtPlayer = false;
+        Vector3 targetPosition = player.transform.position;
+        float step = runSpeed * Time.deltaTime;
+        transform.position = Vector3.MoveTowards(transform.position, targetPosition, step);
+        Vector3 directionToWayPoint = targetPosition - transform.position;
+        Quaternion targetRotation = Quaternion.LookRotation(directionToWayPoint);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, runSpeed * Time.deltaTime);
+
+
+        // check if waypoint reached
+        if (transform.position == targetPosition)
+        {
+            caughtPlayer = true;
+        }
+        return caughtPlayer;
+    }
+
     private bool IsPlayerVisible()
     {
         bool isVisible = false;
 
-        Vector3 directionToPlayer = player.transform.position - transform.position;
-
-        Ray ray = new Ray(transform.position, transform.forward);
-        // cast a ray in the direction of the player
-        if(Physics.Raycast(ray, sightRange, 7))
-        {
-                       
-                // the enemy can see the player
-                isVisible = true;
-                Debug.Log("hit");
-
-        }
+        Collider[] targetsInSightRadius = Physics.OverlapSphere(transform.position, sightRadius, playerMask);
+        isVisible = targetsInSightRadius.Length > 0;
         return isVisible;
     }
 }
