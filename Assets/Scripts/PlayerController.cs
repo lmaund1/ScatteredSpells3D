@@ -8,10 +8,12 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 5f;
     public float fireRate = 10f;
 
+
     private Rigidbody rb;
     public Animator animator;
     private float halfSpeed;
     private GameObject theBullet;
+    public GameObject firePoint;
     
     private float lastFire = 0f;
 
@@ -29,7 +31,7 @@ public class PlayerController : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.Return))
             {
-                Instantiate<GameObject>(bullet, transform.position, transform.rotation);
+                Instantiate<GameObject>(bullet, firePoint.transform.position, firePoint.transform.rotation);
                 lastFire = fireRate;
             }
         }
