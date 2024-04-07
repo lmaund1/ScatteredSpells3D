@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class BulletController : MonoBehaviour
 {
-    public float bulletSpeed = 1f;
+    public float bulletSpeed = 50f;
     public float life = 10f;
+    public int strength = 20;
 
     private float timeLeft = 0f;
 
@@ -19,6 +20,14 @@ public class BulletController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.Translate(transform.forward * bulletSpeed * Time.deltaTime);
+        //transform.Translate(Vector3.forward * bulletSpeed * Time.deltaTime);
     }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Destroy(gameObject);
+    }
+
+ 
+
 }

@@ -27,7 +27,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (lastFire <= 0)
+        /*if (lastFire <= 0)
         {
             if (Input.GetKey(KeyCode.Return))
             {
@@ -39,7 +39,7 @@ public class PlayerController : MonoBehaviour
         {
             lastFire -= Time.deltaTime;
         }
-
+        */
         // Get the input for movement
         //float horizontalInput = Input.GetAxis("Horizontal");
 

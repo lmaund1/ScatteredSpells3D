@@ -12,21 +12,33 @@ public class SkeletonController : MonoBehaviour
     public float horizontalFoV = 0f;
     public float verticalFoV = 0f;
     public LayerMask playerMask;
+    public int health = 100;
+    public GameObject enemyHealthBar;
+    private EnemyHealthBar enemyHealthController;
+    private int currentHealth;
+
+    private float deadFrames;
 
     private int currentWayPointIndex = 0;
     private Animator animator;
 
     private enum SkeletonState
     {
-        idle, walking, engaging, running, attacking, dying, dead 
+        idle, walking, engaging, running, attacking, takingDamage, dying, dead
     }
 
     private SkeletonState skeletonState = SkeletonState.idle;
+    private SkeletonState previousState;
 
     // Start is called before the first frame update
     void Start()
     {
         animator = GetComponent<Animator>();
+        enemyHealthController = enemyHealthBar.GetComponent<EnemyHealthBar>();
+
+        currentHealth = health;
+
+        animator.SetBool("isIdle", true);
     }
 
     // Update is called once per frame
@@ -35,7 +47,9 @@ public class SkeletonController : MonoBehaviour
         switch (skeletonState)
         {
             case SkeletonState.walking:
-                MoveToWayPoint();
+                if (wayPoints.Length > 0)
+                    MoveToWayPoint();
+
                 if (IsPlayerVisible())
                 {
                     skeletonState = SkeletonState.engaging;
@@ -46,7 +60,7 @@ public class SkeletonController : MonoBehaviour
                 break;
 
             case SkeletonState.engaging:
-                if(animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
+                if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
                 {
                     skeletonState = SkeletonState.running;
                     animator.SetBool("isRunning", true);
@@ -55,8 +69,37 @@ public class SkeletonController : MonoBehaviour
                 }
                 break;
 
+            case SkeletonState.dying:
+                deadFrames -= Time.deltaTime;
+                if (deadFrames < 0)
+                {
+                    skeletonState = SkeletonState.dead;
+                }
+                /*
+                 * if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
+                {
+                    Debug.Log("Died");
+                    skeletonState = SkeletonState.dead;
+                }
+                else
+                {
+                    Debug.Log("Waiting");
+                }*/
+                break;
+
+            case SkeletonState.dead:
+                Destroy(gameObject);
+                break;
+
             case SkeletonState.running:
-               RunToPlayer();
+                RunToPlayer();
+                break;
+
+            case SkeletonState.takingDamage:
+                if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
+                {
+                    skeletonState = previousState;
+                }
                 break;
 
             default:
@@ -67,11 +110,11 @@ public class SkeletonController : MonoBehaviour
                 }
                 break;
         }
-        // 
-        
+         
 
-        
-        
+
+
+
     }
 
     private void MoveToWayPoint()
@@ -82,10 +125,10 @@ public class SkeletonController : MonoBehaviour
         Vector3 directionToWayPoint = targetPosition - transform.position;
         Quaternion targetRotation = Quaternion.LookRotation(directionToWayPoint);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, walkSpeed * Time.deltaTime);
-        
+
 
         // check if waypoint reached
-        if(transform.position == targetPosition)
+        if (transform.position == targetPosition)
         {
             // increases or resets index for current way point 
             currentWayPointIndex = (currentWayPointIndex + 1) % wayPoints.Length;
@@ -118,5 +161,30 @@ public class SkeletonController : MonoBehaviour
         Collider[] targetsInSightRadius = Physics.OverlapSphere(transform.position, sightRadius, playerMask);
         isVisible = targetsInSightRadius.Length > 0;
         return isVisible;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (skeletonState != SkeletonState.dying)
+        {
+            if (other.CompareTag("Bullet"))
+            {
+                int strength = other.gameObject.GetComponent<BulletController>().strength;
+                currentHealth = currentHealth - strength;
+                previousState = skeletonState;
+                skeletonState = SkeletonState.takingDamage;
+                animator.SetTrigger("isHit");
+                enemyHealthController.takeDamage(strength);
+                Destroy(other.gameObject);
+
+                if (currentHealth <= 0)
+                {
+                    deadFrames = 3f;
+                    skeletonState = SkeletonState.dying;
+                    animator.SetTrigger("isDead");
+                }
+
+            }
+        }
     }
 }
