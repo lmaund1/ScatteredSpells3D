@@ -157,10 +157,19 @@ public class ThirdPersonMovement : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         Debug.Log(other.gameObject.tag);
-        if (other.CompareTag("Enemy"))
+
+        switch (other.gameObject.tag.ToLower())
         {
-            takingDamage = true;
+            case "enemy":
+                takingDamage = true;
+                break;
+
+            case "greenkey":
+                GameController.Instance.PickUpKey("green");
+                Destroy(other.gameObject);
+                break;
         }
+
     }
 
     private void OnTriggerExit(Collider other)
@@ -170,4 +179,8 @@ public class ThirdPersonMovement : MonoBehaviour
             takingDamage = false;
         }
     }
+
 }
+
+
+
