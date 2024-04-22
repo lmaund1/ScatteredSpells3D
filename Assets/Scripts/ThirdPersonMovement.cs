@@ -7,6 +7,7 @@ public class ThirdPersonMovement : MonoBehaviour
     public CharacterController characterController;
     public Transform playerCamera;
     public Animator animator;
+    public float currentSpellCost = 10f;
 
     public float moveSpeed = 6f;
 
@@ -25,7 +26,6 @@ public class ThirdPersonMovement : MonoBehaviour
 
     private GameObject _theBullet;
     public GameObject firePoint;
-    private float _lastFire = 0f;
 
     public GameObject healthBar;
     private HealthBarController healthBarController;
@@ -66,7 +66,7 @@ public class ThirdPersonMovement : MonoBehaviour
 
                 //is player taking damage
                 if(takingDamage)
-                    healthBarController.takeDamage(10f * Time.deltaTime);
+                    GameController.Instance.TakeDamage(10f * Time.deltaTime);
                 break;
         }
         
@@ -137,7 +137,14 @@ public class ThirdPersonMovement : MonoBehaviour
 
     void CheckCast()
     {
-        if(_lastFire <= 0)
+        if (GameController.Instance.magika < currentSpellCost)
+        {
+            GameController.Instance.lastFire = 0f;
+            return;
+        }
+            
+
+        if(GameController.Instance.lastFire <= 0)
         {
             if (Input.GetKey(KeyCode.Return))
             {
@@ -145,12 +152,13 @@ public class ThirdPersonMovement : MonoBehaviour
                 //Vector3 bulletPos = firePoint.transform.position;
                 //Instantiate<GameObject>(bullet, bulletPos, firePoint.transform.rotation);
                 animator.SetTrigger("isShooting");
-                _lastFire = fireRate;
+                GameController.Instance.lastFire = fireRate;
+                GameController.Instance.magika -= currentSpellCost;
             }
         }
         else
         {
-            _lastFire -= Time.deltaTime;
+            GameController.Instance.lastFire -= Time.deltaTime;
         }
     }
 
@@ -167,6 +175,24 @@ public class ThirdPersonMovement : MonoBehaviour
             case "greenkey":
                 GameController.Instance.PickUpKey("green");
                 Destroy(other.gameObject);
+                break;
+
+            case "healthpotion":
+                HealthPotionController healthPotionController = other.gameObject.GetComponent<HealthPotionController>();
+                if(GameController.Instance.health < GameController.Instance.maxHealth)
+                {
+                    GameController.Instance.RestoreHealth(healthPotionController.healthBoost);
+                    Destroy(other.gameObject);
+                }
+                break;
+
+            case "magikapotion":
+                MagikaPotionController magikaPotionController = other.gameObject.GetComponent<MagikaPotionController>();
+                if(GameController.Instance.magika < GameController.Instance.maxMagika)
+                {
+                    GameController.Instance.RestoreMagika(magikaPotionController.magikaBoost);
+                    Destroy(other.gameObject);
+                }
                 break;
         }
 

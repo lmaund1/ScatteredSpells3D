@@ -8,6 +8,8 @@ TagManager:
   - Enemy
   - Bullet
   - GreenKey
+  - MagikaPotion
+  - HealthPotion
   layers:
   - Default
   - TransparentFX

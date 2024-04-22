@@ -9,8 +9,21 @@ public class GameController : MonoBehaviour
 
     public Image greenKey;
     public GameObject greenKeyUI;
-
+    public GameObject magikaBar;
+    public GameObject healthBar;
+    
     public List<string> keysHeld = new();
+
+    public float health;
+    public float maxHealth;
+    
+    public float currentSpellCost = 10f;
+    public float magika;
+    public float maxMagika = 0f;
+    public float lastFire = 0f;
+
+    private HealthBarController healthBarController;
+    private MagikaBarController magikaBarController;
 
     private void Awake()
     {
@@ -18,6 +31,11 @@ public class GameController : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            if(magikaBar != null)
+            {
+                healthBarController = healthBar.GetComponent<HealthBarController>();
+                magikaBarController = magikaBar.GetComponent<MagikaBarController>();
+            }
         }
         else
         {
@@ -53,5 +71,44 @@ public class GameController : MonoBehaviour
             keys += keyCarried;
         }
         return keys;
+    }
+
+    public void TakeDamage(float damage)
+    {
+        if (health != 0)
+        {
+            health -= damage;
+            if (health < 0)
+            {
+                health = 0;
+            }
+        }
+    }
+
+    public void RestoreHealth(float healthBoost)
+    {
+        health += healthBoost;
+        if(health >= healthBarController.maxHealth)
+        {
+            health = healthBarController.maxHealth;
+        }
+    }
+
+    public void UseMagika(float usage)
+    {
+        magika -= usage;
+        if(magika < 0)
+        {
+            magika = 0;
+        }
+    }
+
+    public void RestoreMagika(float magikaBoost)
+    {
+        magika += magikaBoost;
+        if(magika >= magikaBarController.maxMagika)
+        {
+            magika = magikaBarController.maxMagika;
+        }
     }
 }
