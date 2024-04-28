@@ -8,12 +8,10 @@ public class BulletController : MonoBehaviour
     public float life = 10f;
     public int strength = 20;
 
-    private float timeLeft = 0f;
 
     // Start is called before the first frame update
     void Start()
     {
-        timeLeft = life;
         Destroy(gameObject, life);
     }
 

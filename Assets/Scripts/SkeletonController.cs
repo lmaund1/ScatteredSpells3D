@@ -187,4 +187,25 @@ public class SkeletonController : MonoBehaviour
             }
         }
     }
+
+    public void HitByRayCast(float strength)
+    {
+        if (!animator.GetCurrentAnimatorStateInfo(0).IsName("isDead"))
+        {
+            if (!animator.GetCurrentAnimatorStateInfo(0).IsName("isHit"))
+            {
+                animator.SetTrigger("isHit");
+            }
+
+            enemyHealthController.takeDamage(strength);
+
+            if (currentHealth <= 0)
+            {
+                deadFrames = 3f;
+                skeletonState = SkeletonState.dying;
+                animator.SetTrigger("isDead");
+            }
+        }
+    }
+
 }

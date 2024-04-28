@@ -11,6 +11,10 @@ public class GameController : MonoBehaviour
     public GameObject greenKeyUI;
     public GameObject magikaBar;
     public GameObject healthBar;
+
+    // required for spells
+    public GameObject player;
+    public GameObject firePoint;
     
     public List<string> keysHeld = new();
 

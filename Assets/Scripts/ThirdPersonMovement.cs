@@ -20,15 +20,19 @@ public class ThirdPersonMovement : MonoBehaviour
 
     Vector3 _previousPosition;
 
-    public GameObject bullet;
     public float bulletSpeed = 50f;
     public float fireRate = 1f;
+    public GameObject projectilePrefab;
+    public float projectileSpeed = 10f;
 
-    private GameObject _theBullet;
     public GameObject firePoint;
 
     public GameObject healthBar;
-    private HealthBarController healthBarController;
+
+    public string CurrentSpell { get; set; } = "lightning";
+    private bool isFiring = false;
+    private GameObject lightning;
+    public GameObject lightningPrefab;
 
     private bool takingDamage = false;
 
@@ -42,14 +46,12 @@ public class ThirdPersonMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        healthBarController = healthBar.GetComponent<HealthBarController>();
+       
     }
 
     // Update is called once per frame
     void Update()
     {
-
-
         _previousPosition = characterController.transform.position;
 
         switch (_playerState)
@@ -142,23 +144,47 @@ public class ThirdPersonMovement : MonoBehaviour
             GameController.Instance.lastFire = 0f;
             return;
         }
-            
 
-        if(GameController.Instance.lastFire <= 0)
+        if (CurrentSpell == "lightning")
         {
-            if (Input.GetKey(KeyCode.Return))
+            if (!isFiring)
             {
-                _playerState = PlayerState.casting;
-                //Vector3 bulletPos = firePoint.transform.position;
-                //Instantiate<GameObject>(bullet, bulletPos, firePoint.transform.rotation);
-                animator.SetTrigger("isShooting");
-                GameController.Instance.lastFire = fireRate;
-                GameController.Instance.magika -= currentSpellCost;
+                if (Input.GetKeyDown(KeyCode.Return))
+                {
+                    isFiring = true;
+                    lightning = GameObject.Instantiate(lightningPrefab, firePoint.transform.position, firePoint.transform.rotation);
+                }
+            }
+            else
+            {
+                if (Input.GetKeyUp(KeyCode.Return))
+                {
+                    isFiring = false;
+                    Destroy(lightning);
+
+                }
             }
         }
         else
         {
-            GameController.Instance.lastFire -= Time.deltaTime;
+            if (GameController.Instance.lastFire <= 0)
+            {
+                if (Input.GetKey(KeyCode.Return))
+                {
+                    _playerState = PlayerState.casting;
+                    animator.SetTrigger("isShooting");
+
+                    var projectile = Instantiate(projectilePrefab, firePoint.transform.position, firePoint.transform.rotation);
+                    projectile.GetComponent<Rigidbody>().velocity = firePoint.transform.forward * projectileSpeed;
+
+                    GameController.Instance.lastFire = fireRate;
+                    GameController.Instance.magika -= currentSpellCost;
+                }
+            }
+            else
+            {
+                GameController.Instance.lastFire -= Time.deltaTime;
+            }
         }
     }
 
