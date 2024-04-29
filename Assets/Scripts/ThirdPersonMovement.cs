@@ -29,7 +29,7 @@ public class ThirdPersonMovement : MonoBehaviour
 
     public GameObject healthBar;
 
-    public string CurrentSpell { get; set; } = "lightning";
+    public string CurrentSpell { get; set; } = "_lightning";
     private bool isFiring = false;
     private GameObject lightning;
     public GameObject lightningPrefab;
