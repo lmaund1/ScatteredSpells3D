@@ -15,7 +15,7 @@ public class Spell_Lightning : MonoBehaviour
     // not updating player's position needs to be paired to the firepoint
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         _lightningFX = lightning.GetComponent<VisualEffect>();
         GameObject go = gameObject;
@@ -33,17 +33,19 @@ public class Spell_Lightning : MonoBehaviour
         Vector3 _end;
         RaycastHit hit;
 
-
-        if (Physics.Raycast(transform.position, transform.up, out hit, distance))
+        if (Physics.Raycast(transform.position, transform.forward, out hit, distance))
         {
-            _end = transform.position + transform.up * hit.distance;
+            _end = transform.position + transform.forward * hit.distance;
             _end = new Vector3(_end.x, transform.position.y, _end.z);
-            if (hit.rigidbody.CompareTag("Enemy"))
+            if (hit.rigidbody is not null)
             {
-                SkeletonController skeletonController = hit.rigidbody.GetComponent<SkeletonController>();
-                if(skeletonController != null)
+                if (hit.rigidbody.CompareTag("Enemy"))
                 {
-                    skeletonController.HitByRayCast(1f);
+                    SkeletonController skeletonController = hit.rigidbody.GetComponent<SkeletonController>();
+                    if (skeletonController != null)
+                    {
+                        skeletonController.HitByRayCast(1f);
+                    }
                 }
             }
         }
@@ -54,7 +56,7 @@ public class Spell_Lightning : MonoBehaviour
             _end = new Vector3(_end.x, hit.point.y, _end.z);
         }
 
-        _lightningFX.SetVector3("Pos1", transform.position);
+        ///_lightningFX.SetVector3("Pos1", transform.position + transform.forward);
         _lightningFX.SetVector3("Pos2", _end);
     }
 }

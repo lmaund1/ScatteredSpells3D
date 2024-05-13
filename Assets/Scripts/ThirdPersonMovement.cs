@@ -26,10 +26,11 @@ public class ThirdPersonMovement : MonoBehaviour
     public float projectileSpeed = 10f;
 
     public GameObject firePoint;
+    public GameObject lightningPoint;
 
     public GameObject healthBar;
 
-    public string CurrentSpell { get; set; } = "_lightning";
+    public string CurrentSpell { get; set; } = "lightning";
     private bool isFiring = false;
     private GameObject lightning;
     public GameObject lightningPrefab;
@@ -64,6 +65,7 @@ public class ThirdPersonMovement : MonoBehaviour
                 ApplyGravity();
                 ApplyMovement();
                 ApplyAnimation();
+                CheckSpell();
                 CheckCast();
 
                 //is player taking damage
@@ -71,6 +73,8 @@ public class ThirdPersonMovement : MonoBehaviour
                     GameController.Instance.TakeDamage(10f * Time.deltaTime);
                 break;
         }
+
+
         
     }
 
@@ -126,6 +130,18 @@ public class ThirdPersonMovement : MonoBehaviour
         }
     }
 
+    void CheckSpell()
+    {
+        if (Input.GetKeyUp(KeyCode.Alpha1))
+        {
+            CurrentSpell = "default";
+        }
+        if (Input.GetKeyUp(KeyCode.Alpha2))
+        {
+            CurrentSpell = "lightning";
+        }
+    }
+
     void ApplySpell()
     {
         if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
@@ -149,15 +165,16 @@ public class ThirdPersonMovement : MonoBehaviour
         {
             if (!isFiring)
             {
-                if (Input.GetKeyDown(KeyCode.Return))
+                if (Input.GetButtonDown(buttonName: "Fire1"))
                 {
                     isFiring = true;
-                    lightning = GameObject.Instantiate(lightningPrefab, firePoint.transform.position, firePoint.transform.rotation);
+                    lightning = GameObject.Instantiate(lightningPrefab, lightningPoint.transform.position, lightningPoint.transform.rotation);
+                    lightning.transform.parent = lightningPoint.transform;
                 }
             }
             else
             {
-                if (Input.GetKeyUp(KeyCode.Return))
+                if (Input.GetButtonUp("Fire1"))
                 {
                     isFiring = false;
                     Destroy(lightning);
@@ -169,7 +186,7 @@ public class ThirdPersonMovement : MonoBehaviour
         {
             if (GameController.Instance.lastFire <= 0)
             {
-                if (Input.GetKey(KeyCode.Return))
+                if (Input.GetButton("Fire1"))
                 {
                     _playerState = PlayerState.casting;
                     animator.SetTrigger("isShooting");
