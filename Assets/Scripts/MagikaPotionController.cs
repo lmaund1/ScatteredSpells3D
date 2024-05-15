@@ -4,6 +4,6 @@ using UnityEngine;
 
 public class MagikaPotionController : MonoBehaviour
 {
-    public float magikaBoost = 20f;
+    public float magikaBoost = 50f;
 
 }
