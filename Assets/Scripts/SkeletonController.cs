@@ -9,6 +9,7 @@ public class SkeletonController : MonoBehaviour
     public float walkSpeed = 4f;
     public float runSpeed = 8f;
     public float sightRadius = 10f;
+    public float attackRadius = 5f;
     public float horizontalFoV = 0f;
     public float verticalFoV = 0f;
     public LayerMask playerMask;
@@ -18,7 +19,6 @@ public class SkeletonController : MonoBehaviour
     private int currentHealth;
 
     private float deadFrames;
-
     private int currentWayPointIndex = 0;
     private Animator animator;
 
@@ -92,13 +92,27 @@ public class SkeletonController : MonoBehaviour
                 break;
 
             case SkeletonState.running:
-                RunToPlayer();
+                if (RunToPlayer())
+                {
+                    skeletonState = SkeletonState.attacking;
+                    animator.SetTrigger("isAttacking");
+                }
+                break;
+
+            case SkeletonState.attacking:
+                transform.LookAt(player.transform);
+                if(animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
+                {
+                    skeletonState = SkeletonState.running;
+                }
                 break;
 
             case SkeletonState.takingDamage:
                 if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
                 {
+                    
                     skeletonState = previousState;
+                    Debug.Log("line 115 : " + skeletonState.ToString());
                 }
                 break;
 
@@ -147,9 +161,17 @@ public class SkeletonController : MonoBehaviour
 
 
         // check if waypoint reached
-        if (transform.position == targetPosition)
+        float playerDistance = Vector3.Distance(transform.position, targetPosition);
+        if (playerDistance <= attackRadius)
         {
             caughtPlayer = true;
+        }
+        else
+        {
+            if(playerDistance > sightRadius)
+            {
+                skeletonState = SkeletonState.walking;
+            }
         }
         return caughtPlayer;
     }
@@ -195,6 +217,8 @@ public class SkeletonController : MonoBehaviour
             if (!animator.GetCurrentAnimatorStateInfo(0).IsName("isHit"))
             {
                 animator.SetTrigger("isHit");
+                previousState = skeletonState;
+                skeletonState = SkeletonState.takingDamage;
             }
 
             enemyHealthController.takeDamage(strength);
