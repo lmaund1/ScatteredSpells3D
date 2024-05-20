@@ -9,7 +9,7 @@ public class SkeletonController : MonoBehaviour
     public float walkSpeed = 4f;
     public float runSpeed = 8f;
     public float sightRadius = 10f;
-    public float attackRadius = 5f;
+    public float attackRadius = 2f;
     public float horizontalFoV = 0f;
     public float verticalFoV = 0f;
     public LayerMask playerMask;
