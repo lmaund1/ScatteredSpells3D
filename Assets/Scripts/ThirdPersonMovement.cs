@@ -28,6 +28,7 @@ public class ThirdPersonMovement : MonoBehaviour
     public GameObject firePoint;
     public GameObject lightningPoint;
 
+
     public GameObject healthBar;
 
     public string CurrentSpell { get; set; } = "lightning";
@@ -53,6 +54,8 @@ public class ThirdPersonMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
+
         _previousPosition = characterController.transform.position;
 
         switch (_playerState)

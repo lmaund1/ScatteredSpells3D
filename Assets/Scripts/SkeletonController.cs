@@ -22,13 +22,12 @@ public class SkeletonController : MonoBehaviour
     private int currentWayPointIndex = 0;
     private Animator animator;
 
-    private enum SkeletonState
+    public enum SkeletonState
     {
         idle, walking, engaging, running, attacking, takingDamage, dying, dead
     }
 
     private SkeletonState skeletonState = SkeletonState.idle;
-    private SkeletonState previousState;
 
     // Start is called before the first frame update
     void Start()
@@ -44,6 +43,7 @@ public class SkeletonController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
         switch (skeletonState)
         {
             case SkeletonState.walking:
@@ -52,7 +52,7 @@ public class SkeletonController : MonoBehaviour
 
                 if (IsPlayerVisible())
                 {
-                    skeletonState = SkeletonState.engaging;
+                    ChangeState(SkeletonState.engaging);
                     animator.SetBool("isIdle", false);
                     animator.SetBool("isWalking", false);
                     animator.SetTrigger("isEngaging");
@@ -62,7 +62,7 @@ public class SkeletonController : MonoBehaviour
             case SkeletonState.engaging:
                 if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
                 {
-                    skeletonState = SkeletonState.running;
+                    ChangeState(SkeletonState.running);
                     animator.SetBool("isRunning", true);
                     animator.SetBool("isWalking", false);
                     animator.SetBool("isIdle", false);
@@ -94,25 +94,24 @@ public class SkeletonController : MonoBehaviour
             case SkeletonState.running:
                 if (RunToPlayer())
                 {
-                    skeletonState = SkeletonState.attacking;
+                    ChangeState(SkeletonState.attacking);
                     animator.SetTrigger("isAttacking");
                 }
                 break;
 
             case SkeletonState.attacking:
                 transform.LookAt(player.transform);
-                if(animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
+                if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
                 {
-                    skeletonState = SkeletonState.running;
+                    ChangeState(SkeletonState.running);
                 }
                 break;
 
             case SkeletonState.takingDamage:
                 if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
                 {
-                    
-                    skeletonState = previousState;
-                    Debug.Log("line 115 : " + skeletonState.ToString());
+                    ChangeState(SkeletonState.engaging);
+
                 }
                 break;
 
@@ -120,16 +119,17 @@ public class SkeletonController : MonoBehaviour
                 if (animator.GetBool("isWalking") == false && wayPoints.Length > 0)
                 {
                     animator.SetBool("isWalking", true);
-                    skeletonState = SkeletonState.walking;
+                    ChangeState(SkeletonState.walking);
                 }
                 break;
         }
-         
-
-
-
-
     }
+
+
+
+
+
+
 
     private void MoveToWayPoint()
     {
@@ -168,9 +168,9 @@ public class SkeletonController : MonoBehaviour
         }
         else
         {
-            if(playerDistance > sightRadius)
+            if (playerDistance > sightRadius)
             {
-                skeletonState = SkeletonState.walking;
+                ChangeState(SkeletonState.walking);
             }
         }
         return caughtPlayer;
@@ -193,18 +193,10 @@ public class SkeletonController : MonoBehaviour
             {
                 int strength = other.gameObject.GetComponent<BulletController>().strength;
                 currentHealth = currentHealth - strength;
-                previousState = skeletonState;
-                skeletonState = SkeletonState.takingDamage;
+                ChangeState(SkeletonState.takingDamage);
                 animator.SetTrigger("isHit");
                 enemyHealthController.takeDamage(strength);
                 Destroy(other.gameObject);
-
-                if (currentHealth <= 0)
-                {
-                    deadFrames = 3f;
-                    skeletonState = SkeletonState.dying;
-                    animator.SetTrigger("isDead");
-                }
 
             }
         }
@@ -217,18 +209,28 @@ public class SkeletonController : MonoBehaviour
             if (!animator.GetCurrentAnimatorStateInfo(0).IsName("isHit"))
             {
                 animator.SetTrigger("isHit");
-                previousState = skeletonState;
-                skeletonState = SkeletonState.takingDamage;
+                ChangeState(SkeletonState.takingDamage);
             }
 
+            currentHealth = currentHealth -(int) strength;
             enemyHealthController.takeDamage(strength);
 
-            if (currentHealth <= 0)
-            {
-                deadFrames = 3f;
-                skeletonState = SkeletonState.dying;
-                animator.SetTrigger("isDead");
-            }
+
+        }
+    }
+
+    public void ChangeState(SkeletonState newState)
+    {
+        
+        if (currentHealth <= 0)
+        {
+            deadFrames = 3f;
+            skeletonState = SkeletonState.dying;
+            animator.SetTrigger("isDead");
+        }
+        else
+        {
+            skeletonState = newState;
         }
     }
 

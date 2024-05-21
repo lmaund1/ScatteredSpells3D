@@ -6,12 +6,14 @@ using UnityEngine.VFX;
 public class Spell_Lightning : MonoBehaviour
 {
     public GameObject lightning;
+    public GameObject spherePrefab;
 
-    public float distance = 2.0f;
+    public float distance = 10f;
 
     private VisualEffect _lightningFX;
-    private Transform playerTransform;
+    //private Transform playerTransform;
 
+    private GameObject sphere;
     // not updating player's position needs to be paired to the firepoint
 
     // Start is called before the first frame update
@@ -23,20 +25,36 @@ public class Spell_Lightning : MonoBehaviour
         {
             go = go.transform.parent.gameObject;
         }
-        playerTransform = go.transform;
+        //playerTransform = go.transform;
+
+        // this is test only 
+        sphere = GameObject.Instantiate(spherePrefab);
+        GameObject.Instantiate(spherePrefab).transform.position = transform.position;
     }
 
     // Update is called once per frame
     void Update()
     {
+        Vector3 spherePos = transform.position + transform.forward * 2f;
+        sphere.transform.position = spherePos;
+        _lightningFX.SetVector3("Pos1", Vector3.zero);
+        _lightningFX.SetVector3("Pos2", sphere.transform.position);
+    }
+
+    void _Update()
+    {
         float endDistance = distance;
         Vector3 _end;
         RaycastHit hit;
 
-        if (Physics.Raycast(transform.position, transform.forward, out hit, distance))
+        Vector3 hitPoint = new Vector3(transform.position.x, 2f, transform.position.z);
+        if (Physics.Raycast(hitPoint, Vector3.up, out hit, distance))
         {
-            _end = transform.position + transform.forward * hit.distance;
+            _end = transform.position + transform.up * hit.distance;
             _end = new Vector3(_end.x, transform.position.y, _end.z);
+
+           // _end = hit.point;
+
             if (hit.rigidbody is not null)
             {
                 if (hit.rigidbody.CompareTag("Enemy"))
@@ -45,13 +63,14 @@ public class Spell_Lightning : MonoBehaviour
                     if (skeletonController != null)
                     {
                         skeletonController.HitByRayCast(1f);
+                        
                     }
                 }
             }
         }
         else
         {
-            Physics.Raycast(playerTransform.position, Vector3.down, out hit);
+            Physics.Raycast(transform.position, Vector3.down, out hit);
             _end = transform.position + transform.up * distance;
             _end = new Vector3(_end.x, hit.point.y, _end.z);
         }

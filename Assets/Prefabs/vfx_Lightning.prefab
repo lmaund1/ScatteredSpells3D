@@ -322,4 +322,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lightning: {fileID: 5534858424676702522}
-  distance: 2
+  spherePrefab: {fileID: 418444263558246531, guid: 5551eae3fb4a4f34a821fb5be5b100f4,
+    type: 3}
+  distance: 10
