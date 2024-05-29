@@ -9,14 +9,17 @@ public class DoorController : MonoBehaviour
 
     public string keyRequired = string.Empty;
     public GameObject doorBlock;
+    public AudioClip creak;
+    public AudioClip creak2;
+    public AudioClip doorShut;
+    
+    private AudioSource audioSource;
     private BoxCollider doorBlockCollider;
-    private bool doorOpening = false;
-    private bool isDoorOpen = false;
-    private bool isDoorClosing = false;
 
     private void Awake()
     {
         doorBlockCollider = doorBlock.GetComponent<BoxCollider>();
+        audioSource = gameObject.GetComponent<AudioSource>();
     }
 
     // Start is called before the first frame update
@@ -28,26 +31,7 @@ public class DoorController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (doorOpening)
-        {
-            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-            if (stateInfo.normalizedTime >= 1f)
-            {
-                doorOpening = false;
-                isDoorOpen = true;
-                doorBlockCollider.enabled = false;
-            }
-        }
-        else if (isDoorClosing)
-        {
-            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-            if (stateInfo.normalizedTime >= 1f)
-            {
-                isDoorClosing = false;
-                isDoorOpen = false;
-                doorBlockCollider.enabled = true;
-            }
-        }
+ 
     }
 
     private void OnTriggerEnter(Collider other)
@@ -65,8 +49,6 @@ public class DoorController : MonoBehaviour
             }
             if (canOpen)
             {
-                doorOpening = true;
-                isDoorOpen = false;
                 animator.SetTrigger("open");
             }
         }
@@ -76,14 +58,29 @@ public class DoorController : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            if (isDoorOpen || doorOpening)
-            {
-                isDoorOpen = false;
-                doorOpening = false;
-                isDoorClosing = true;
-                animator.SetTrigger("close");
-            }
-            
+            animator.SetTrigger("close");
         }
+    }
+
+    public void PlayDoorShut()
+    {
+        audioSource.clip = doorShut;
+        audioSource.Play();
+    }
+
+    public void PlayDoorOpen()
+    {
+        audioSource.clip = creak;
+        audioSource.Play();
+    }
+
+    private void RemoveDoorBlock()
+    {
+        doorBlockCollider.enabled = false;
+    }
+
+    private void AddDoorBlock()
+    {
+        doorBlockCollider.enabled = true;
     }
 }

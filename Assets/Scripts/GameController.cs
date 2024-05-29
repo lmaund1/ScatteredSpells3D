@@ -28,13 +28,17 @@ public class GameController : MonoBehaviour
 
     private HealthBarController healthBarController;
     private MagikaBarController magikaBarController;
+    private ThirdPersonMovement thirdPersonMovement;
 
     private void Awake()
     {
+
+
         if(Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            thirdPersonMovement = player.GetComponent<ThirdPersonMovement>();
             if(magikaBar != null)
             {
                 healthBarController = healthBar.GetComponent<HealthBarController>();
@@ -45,6 +49,11 @@ public class GameController : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+    private void Update()
+    {
+        
     }
 
     public void PickUpKey(string key)
@@ -85,6 +94,7 @@ public class GameController : MonoBehaviour
             if (health < 0)
             {
                 health = 0;
+                thirdPersonMovement.Death();
             }
         }
     }
@@ -114,5 +124,21 @@ public class GameController : MonoBehaviour
         {
             magika = magikaBarController.maxMagika;
         }
+    }
+
+    public void ShowLightning()
+    {
+        thirdPersonMovement.ShowLightning();
+        
+    }
+
+    public void WitchDeath()
+    {
+        thirdPersonMovement.WitchDeath();
+    }
+
+    public void GameOver()
+    {
+        thirdPersonMovement.GameOver();
     }
 }

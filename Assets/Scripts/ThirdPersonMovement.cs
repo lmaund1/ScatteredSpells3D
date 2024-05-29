@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ThirdPersonMovement : MonoBehaviour
 {
@@ -8,8 +10,10 @@ public class ThirdPersonMovement : MonoBehaviour
     public Transform playerCamera;
     public Animator animator;
     public float currentSpellCost = 10f;
+    public GameObject playerStart;
 
     public float moveSpeed = 6f;
+    private int gameOverLoop = 0;
 
     public float smoothing = 0.1f;
     float _smoothingVelocity;
@@ -28,8 +32,16 @@ public class ThirdPersonMovement : MonoBehaviour
     public GameObject firePoint;
     public GameObject lightningPoint;
 
+    //sound effects for lightning
+    private AudioSource audioSource;
+    public AudioClip audioLightningStart;
+    public AudioClip audioLightningLoop;
+    public AudioClip audioLightningEnd;
 
-    public GameObject healthBar;
+    //sound effect fireball
+    public AudioClip audioFireball;
+
+    //public GameObject healthBar;
 
     public string CurrentSpell { get; set; } = "lightning";
     private bool isFiring = false;
@@ -37,32 +49,47 @@ public class ThirdPersonMovement : MonoBehaviour
     public GameObject lightningPrefab;
 
     private bool takingDamage = false;
+    public GameObject textMesh;
+    private TextMeshProUGUI goStartText;
 
     private enum PlayerState
     {
-        idle, walking, running, casting, dying, dead
+        starting, idle, walking, running, casting, dying, dead
     }
 
-    private PlayerState _playerState = PlayerState.idle;
+    private PlayerState _playerState = PlayerState.starting;
 
     // Start is called before the first frame update
     void Start()
     {
-       
+        audioSource = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
 
         _previousPosition = characterController.transform.position;
 
         switch (_playerState)
         {
-            //case PlayerState.casting:
-                //ApplySpell();
-               // break;
+            case PlayerState.starting:
+                if (goStartText == null)
+                {
+                    goStartText = textMesh.GetComponent<TextMeshProUGUI>();
+                    goStartText.text = "Press fire to start";
+                    goStartText.enabled = true;
+                }
+                if (Input.GetButtonUp("Fire1"))
+                {
+                    _playerState = PlayerState.idle;
+                    goStartText.enabled = false;
+                    goStartText = null;
+                }
+                break;
+
+            case PlayerState.dying:
+                break;
 
             default:
                 ApplyGravity();
@@ -72,13 +99,13 @@ public class ThirdPersonMovement : MonoBehaviour
                 CheckCast();
 
                 //is player taking damage
-                if(takingDamage)
+                if (takingDamage)
                     GameController.Instance.TakeDamage(10f * Time.deltaTime);
                 break;
         }
 
 
-        
+
     }
 
 
@@ -92,7 +119,7 @@ public class ThirdPersonMovement : MonoBehaviour
         {
             _velocity += _gravity * gravityMultiplier * Time.deltaTime;
         }
-        
+
         Vector3 _direction = new Vector3(0f, _velocity, 0f);
         characterController.Move(_direction);
     }
@@ -145,6 +172,7 @@ public class ThirdPersonMovement : MonoBehaviour
         }
     }
 
+    /*
     void ApplySpell()
     {
         if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
@@ -155,6 +183,7 @@ public class ThirdPersonMovement : MonoBehaviour
             _playerState = PlayerState.idle;
         }
     }
+    */
 
     void CheckCast()
     {
@@ -171,8 +200,11 @@ public class ThirdPersonMovement : MonoBehaviour
                 if (Input.GetButtonDown(buttonName: "Fire1"))
                 {
                     isFiring = true;
-                    lightning = GameObject.Instantiate(lightningPrefab, lightningPoint.transform.position, lightningPoint.transform.rotation);
-                    lightning.transform.parent = lightningPoint.transform;
+                    animator.SetBool("IsLighting", true);
+
+                    //animator.SetTrigger("isShooting");
+                    //animator.SetLayerWeight(1, 1);
+
                 }
             }
             else
@@ -180,7 +212,17 @@ public class ThirdPersonMovement : MonoBehaviour
                 if (Input.GetButtonUp("Fire1"))
                 {
                     isFiring = false;
+                    animator.SetBool("IsLighting", false);
+                    PlayLightningEnd();
+                    //animator.SetLayerWeight(1, 0);
+
                     Destroy(lightning);
+                    lightning = null;
+                }
+                else if (lightning is not null && !audioSource.isPlaying)
+                {
+
+                    PlayLightningLoop();
 
                 }
             }
@@ -196,6 +238,9 @@ public class ThirdPersonMovement : MonoBehaviour
 
                     var projectile = Instantiate(projectilePrefab, firePoint.transform.position, firePoint.transform.rotation);
                     projectile.GetComponent<Rigidbody>().velocity = firePoint.transform.forward * projectileSpeed;
+                    audioSource.clip = audioFireball;
+                    audioSource.loop = false;
+                    audioSource.Play();
 
                     GameController.Instance.lastFire = fireRate;
                     GameController.Instance.magika -= currentSpellCost;
@@ -223,7 +268,7 @@ public class ThirdPersonMovement : MonoBehaviour
 
             case "healthpotion":
                 HealthPotionController healthPotionController = other.gameObject.GetComponent<HealthPotionController>();
-                if(GameController.Instance.health < GameController.Instance.maxHealth)
+                if (GameController.Instance.health < GameController.Instance.maxHealth)
                 {
                     GameController.Instance.RestoreHealth(healthPotionController.healthBoost);
                     Destroy(other.gameObject);
@@ -232,7 +277,7 @@ public class ThirdPersonMovement : MonoBehaviour
 
             case "magikapotion":
                 MagikaPotionController magikaPotionController = other.gameObject.GetComponent<MagikaPotionController>();
-                if(GameController.Instance.magika < GameController.Instance.maxMagika)
+                if (GameController.Instance.magika < GameController.Instance.maxMagika)
                 {
                     GameController.Instance.RestoreMagika(magikaPotionController.magikaBoost);
                     Destroy(other.gameObject);
@@ -250,6 +295,90 @@ public class ThirdPersonMovement : MonoBehaviour
         }
     }
 
+    public void ShowLightning()
+    {
+        if (isFiring)
+        {
+            lightning = GameObject.Instantiate(lightningPrefab);
+            lightning.transform.SetParent(lightningPoint.transform, false);
+            PlayLightningStart();
+        }
+
+    }
+
+    private void PlayLightningStart()
+    {
+        audioSource.clip = audioLightningStart;
+        audioSource.loop = false;
+        audioSource.Play();
+    }
+
+    private void PlayLightningEnd()
+    {
+        audioSource.clip = audioLightningEnd;
+        audioSource.loop = false;
+        audioSource.Play();
+    }
+
+    private void PlayLightningLoop()
+    {
+        audioSource.clip = audioLightningLoop;
+        audioSource.loop = true;
+        audioSource.Play();
+    }
+
+    public void Death()
+    {
+        _playerState = PlayerState.dying;
+        if (lightning)
+        {
+            isFiring = false;
+            Destroy(lightning);
+        }
+        animator.SetBool("isDead", true);
+    }
+
+    public void WitchDeath()
+    {
+        animator.SetBool("isLaying", true);
+    }
+
+    public void GameOver()
+    {
+        //gameOverLoop++;
+       // if (gameOverLoop > 1)
+        //{
+            ResetPlayer();
+            _playerState = PlayerState.starting;
+            
+        //}
+
+    }
+
+    private void ResetPlayer()
+    {
+        /*
+         reset health
+        reset player position 
+        reset magika
+        remove key
+
+         */
+        animator.SetBool("isLaying", false);
+        audioSource.Stop();
+        isFiring = false;
+        GameController.Instance.health = 100;
+        GameController.Instance.magika = 100;
+        transform.position = playerStart.transform.position;
+        GameController.Instance.keysHeld.Clear();
+        animator.SetBool("isDead", false);
+        animator.SetBool("isWalking", false);
+        animator.SetBool("isRunning", false);
+        animator.SetBool("IsLightning", false);
+        animator.SetBool("isIdle", true);
+        
+        
+    }
 }
 
 
