@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Controls the behavior of a door in the game.
+/// </summary>
 public class DoorController : MonoBehaviour
 { 
     public Animator animator;
@@ -22,18 +25,10 @@ public class DoorController : MonoBehaviour
         audioSource = gameObject.GetComponent<AudioSource>();
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
- 
-    }
-
+    /// <summary>
+    /// Called when a collider enters the trigger zone of the door.
+    /// </summary>
+    /// <param name="other">The collider that entered the trigger zone.</param>
     private void OnTriggerEnter(Collider other)
     {
         if(other.CompareTag("Player"))
@@ -54,6 +49,10 @@ public class DoorController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Called when a collider exits the trigger zone of the door.
+    /// </summary>
+    /// <param name="other">The collider that exited the trigger zone.</param>
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -62,23 +61,35 @@ public class DoorController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Plays the sound of the door shutting.
+    /// </summary>
     public void PlayDoorShut()
     {
         audioSource.clip = doorShut;
         audioSource.Play();
     }
 
+    /// <summary>
+    /// Plays the sound of the door opening.
+    /// </summary>
     public void PlayDoorOpen()
     {
         audioSource.clip = creak;
         audioSource.Play();
     }
 
+    /// <summary>
+    /// Removes the door block collider, allowing the player to pass through the door.
+    /// </summary>
     private void RemoveDoorBlock()
     {
         doorBlockCollider.enabled = false;
     }
 
+    /// <summary>
+    /// Adds the door block collider, blocking the player from passing through the door.
+    /// </summary>
     private void AddDoorBlock()
     {
         doorBlockCollider.enabled = true;

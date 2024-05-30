@@ -2,8 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Controls the behavior of a skeleton enemy in the game.
+/// </summary>
 public class SkeletonController : MonoBehaviour
 {
+    // Public variables
     public GameObject player;
     public Transform[] wayPoints;
     public float walkSpeed = 4f;
@@ -17,14 +21,15 @@ public class SkeletonController : MonoBehaviour
     public GameObject enemyHealthBar;
     public AudioClip audioHit;
 
+    // Private variables
     private AudioSource audioSource;
     private EnemyHealthBar enemyHealthController;
     private int currentHealth;
-
     private float deadFrames;
     private int currentWayPointIndex = 0;
     private Animator animator;
 
+    // Enumeration for the different states of the skeleton
     public enum SkeletonState
     {
         idle, walking, engaging, running, attacking, takingDamage, dying, dead
@@ -79,16 +84,6 @@ public class SkeletonController : MonoBehaviour
                 {
                     skeletonState = SkeletonState.dead;
                 }
-                /*
-                 * if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
-                {
-                    Debug.Log("Died");
-                    skeletonState = SkeletonState.dead;
-                }
-                else
-                {
-                    Debug.Log("Waiting");
-                }*/
                 break;
 
             case SkeletonState.dead:
@@ -131,12 +126,9 @@ public class SkeletonController : MonoBehaviour
         }
     }
 
-
-
-
-
-
-
+    /// <summary>
+    /// Moves the skeleton towards the current waypoint.
+    /// </summary>
     private void MoveToWayPoint()
     {
         Vector3 targetPosition = wayPoints[currentWayPointIndex].position;
@@ -146,15 +138,18 @@ public class SkeletonController : MonoBehaviour
         Quaternion targetRotation = Quaternion.LookRotation(directionToWayPoint);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, walkSpeed * Time.deltaTime);
 
-
-        // check if waypoint reached
+        // Check if waypoint reached
         if (transform.position == targetPosition)
         {
-            // increases or resets index for current way point 
+            // Increases or resets index for current waypoint
             currentWayPointIndex = (currentWayPointIndex + 1) % wayPoints.Length;
         }
     }
 
+    /// <summary>
+    /// Moves the skeleton towards the player.
+    /// </summary>
+    /// <returns>True if the player is caught, false otherwise.</returns>
     private bool RunToPlayer()
     {
         bool caughtPlayer = false;
@@ -165,8 +160,7 @@ public class SkeletonController : MonoBehaviour
         Quaternion targetRotation = Quaternion.LookRotation(directionToWayPoint);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, runSpeed * Time.deltaTime);
 
-
-        // check if waypoint reached
+        // Check if player is caught or out of sight
         float playerDistance = Vector3.Distance(transform.position, targetPosition);
         if (playerDistance <= attackRadius)
         {
@@ -182,6 +176,10 @@ public class SkeletonController : MonoBehaviour
         return caughtPlayer;
     }
 
+    /// <summary>
+    /// Checks if the player is visible within the sight radius.
+    /// </summary>
+    /// <returns>True if the player is visible, false otherwise.</returns>
     private bool IsPlayerVisible()
     {
         bool isVisible = false;
@@ -191,6 +189,10 @@ public class SkeletonController : MonoBehaviour
         return isVisible;
     }
 
+    /// <summary>
+    /// Handles the collision with other objects.
+    /// </summary>
+    /// <param name="other">The collider of the other object.</param>
     private void OnTriggerEnter(Collider other)
     {
         if (skeletonState != SkeletonState.dying)
@@ -203,11 +205,14 @@ public class SkeletonController : MonoBehaviour
                 animator.SetTrigger("isHit");
                 enemyHealthController.takeDamage(strength);
                 Destroy(other.gameObject);
-
             }
         }
     }
 
+    /// <summary>
+    /// Handles the skeleton being hit by a raycast.
+    /// </summary>
+    /// <param name="strength">The strength of the raycast hit.</param>
     public void HitByRayCast(float strength)
     {
         if (!animator.GetCurrentAnimatorStateInfo(0).IsName("isDead"))
@@ -218,16 +223,17 @@ public class SkeletonController : MonoBehaviour
                 ChangeState(SkeletonState.takingDamage);
             }
 
-            currentHealth = currentHealth -(int) strength;
+            currentHealth = currentHealth - (int)strength;
             enemyHealthController.takeDamage(strength);
-
-
         }
     }
 
+    /// <summary>
+    /// Changes the state of the skeleton.
+    /// </summary>
+    /// <param name="newState">The new state to change to.</param>
     public void ChangeState(SkeletonState newState)
     {
-        
         if (currentHealth <= 0)
         {
             deadFrames = 3f;
@@ -239,5 +245,4 @@ public class SkeletonController : MonoBehaviour
             skeletonState = newState;
         }
     }
-
 }

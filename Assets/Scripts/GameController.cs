@@ -5,42 +5,50 @@ using UnityEngine.UI;
 
 public class GameController : MonoBehaviour
 {
+    // Singleton instance of the GameController
     public static GameController Instance { get; private set; }
 
-    public Image greenKey;
-    public GameObject greenKeyUI;
-    public GameObject magikaBar;
-    public GameObject healthBar;
-    
+    // UI elements
+    public Image greenKey; // Image for the green key
+    public GameObject greenKeyUI; // UI element for displaying the green key
+    public GameObject magikaBar; // UI element for the magika bar
+    public GameObject healthBar; // UI element for the health bar
 
-    // required for spells
-    public GameObject player;
-    public GameObject firePoint;
-    
+    // Required game objects for spells
+    public GameObject player; // Player game object
+    public GameObject firePoint; // Fire point game object
+
+    // List to store keys held by the player
     public List<string> keysHeld = new();
 
-    public float health;
-    public float maxHealth;
-    
-    public float currentSpellCost = 10f;
-    public float magika;
-    public float maxMagika = 0f;
-    public float lastFire = 0f;
+    // Health variables
+    public float health; // Current health
+    public float maxHealth; // Maximum health
 
-    private HealthBarController healthBarController;
-    private MagikaBarController magikaBarController;
-    private ThirdPersonMovement thirdPersonMovement;
+    // Magika variables
+    public float currentSpellCost = 10f; // Cost of the current spell
+    public float magika; // Current magika
+    public float maxMagika = 0f; // Maximum magika
+    public float lastFire = 0f; // Time of the last fire
+
+    // References to other scripts
+    private HealthBarController healthBarController; // Reference to the HealthBarController script
+    private MagikaBarController magikaBarController; // Reference to the MagikaBarController script
+    private ThirdPersonMovement thirdPersonMovement; // Reference to the ThirdPersonMovement script
 
     private void Awake()
     {
-
-
-        if(Instance == null)
+        // Singleton pattern implementation
+        if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            // Get references to other scripts
             thirdPersonMovement = player.GetComponent<ThirdPersonMovement>();
-            if(magikaBar != null)
+
+            // Check if magikaBar is not null before getting references to other scripts
+            if (magikaBar != null)
             {
                 healthBarController = healthBar.GetComponent<HealthBarController>();
                 magikaBarController = magikaBar.GetComponent<MagikaBarController>();
@@ -52,8 +60,15 @@ public class GameController : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (Input.GetKey(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
+    }
 
-
+    // Method to pick up a key
     public void PickUpKey(string key)
     {
         switch (key)
@@ -69,13 +84,14 @@ public class GameController : MonoBehaviour
                 break;
         }
     }
-    
+
+    // Method to get a string representation of the keys held by the player
     public string Keys()
     {
         string keys = string.Empty;
-        foreach(string keyCarried in keysHeld)
+        foreach (string keyCarried in keysHeld)
         {
-            if(keys.Length > 1)
+            if (keys.Length > 1)
             {
                 keys += ", ";
             }
@@ -84,6 +100,7 @@ public class GameController : MonoBehaviour
         return keys;
     }
 
+    // Method to take damage
     public void TakeDamage(float damage)
     {
         if (health != 0)
@@ -97,44 +114,49 @@ public class GameController : MonoBehaviour
         }
     }
 
+    // Method to restore health
     public void RestoreHealth(float healthBoost)
     {
         health += healthBoost;
-        if(health >= healthBarController.maxHealth)
+        if (health >= healthBarController.maxHealth)
         {
             health = healthBarController.maxHealth;
         }
     }
 
+    // Method to use magika
     public void UseMagika(float usage)
     {
         magika -= usage;
-        if(magika < 0)
+        if (magika < 0)
         {
             magika = 0;
         }
     }
 
+    // Method to restore magika
     public void RestoreMagika(float magikaBoost)
     {
         magika += magikaBoost;
-        if(magika >= magikaBarController.maxMagika)
+        if (magika >= magikaBarController.maxMagika)
         {
             magika = magikaBarController.maxMagika;
         }
     }
 
+    // Method to show lightning effect
     public void ShowLightning()
     {
         thirdPersonMovement.ShowLightning();
-        
     }
 
+    // Method to handle witch death
     public void WitchDeath()
     {
         thirdPersonMovement.WitchDeath();
     }
 
+    // Method to handle game over
     public void GameOver()
     {
         thirdPersonMovement.GameOver();

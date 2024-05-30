@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Rotator : MonoBehaviour
 {
+// Controls key rotation events
+
     [SerializeField] private Vector3 _rotation;
 
     // Start is called before the first frame update

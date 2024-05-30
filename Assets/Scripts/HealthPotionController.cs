@@ -4,17 +4,7 @@ using UnityEngine;
 
 public class HealthPotionController : MonoBehaviour
 {
+    // sets health boost value
     public float healthBoost;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

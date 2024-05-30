@@ -4,10 +4,20 @@ using UnityEngine;
 
 public class BulletController : MonoBehaviour
 {
+    /// <summary>
+    /// The speed at which the bullet moves.
+    /// </summary>
     public float bulletSpeed = 50f;
-    public float life = 10f;
-    public int strength = 20;
 
+    /// <summary>
+    /// The lifespan of the bullet in seconds.
+    /// </summary>
+    public float life = 10f;
+
+    /// <summary>
+    /// The strength of the bullet.
+    /// </summary>
+    public int strength = 20;
 
     // Start is called before the first frame update
     void Start()
@@ -15,17 +25,12 @@ public class BulletController : MonoBehaviour
         Destroy(gameObject, life);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        //transform.Translate(Vector3.forward * bulletSpeed * Time.deltaTime);
-    }
-
+    /// <summary>
+    /// Called when the bullet collides with another object.
+    /// </summary>
+    /// <param name="collision">The collision data.</param>
     private void OnCollisionEnter(Collision collision)
     {
         Destroy(gameObject);
     }
-
- 
-
 }

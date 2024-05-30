@@ -6,16 +6,12 @@ public class Mage : MonoBehaviour
 {
     private GameController gameController;
 
+    // Controls all animation events 
+    
     // Start is called before the first frame update
     void Start()
     {
         gameController = GameController.Instance;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     public void ShowLightning()
@@ -26,12 +22,10 @@ public class Mage : MonoBehaviour
     public void WitchDeath()
     {
         gameController.WitchDeath();
-        Debug.Log("witch death");
     }
 
     public void GameOver()
     {
         gameController.GameOver();
-        Debug.Log("game over");
     }
 }

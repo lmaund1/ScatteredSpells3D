@@ -6,33 +6,34 @@ using UnityEngine.UI;
 
 public class ThirdPersonMovement : MonoBehaviour
 {
+    // References to other components and objects
     public CharacterController characterController;
     public Transform playerCamera;
     public Animator animator;
-    public float currentSpellCost = 10f;
+    
     public GameObject playerStart;
 
+    // Movement variables
     public float moveSpeed = 6f;
     private int gameOverLoop = 0;
+    Vector3 _previousPosition;
 
+    // Gravity variables
     public float smoothing = 0.1f;
     float _smoothingVelocity;
-
     float _gravity = -9.81f;
     [SerializeField] float gravityMultiplier = 3f;
     float _velocity;
 
-    Vector3 _previousPosition;
-
+    // Projectile variables
     public float bulletSpeed = 50f;
     public float fireRate = 1f;
     public GameObject projectilePrefab;
     public float projectileSpeed = 10f;
-
     public GameObject firePoint;
     public GameObject lightningPoint;
 
-    //sound effects for lightning
+    // Sound effect variables
     private AudioSource audioSource;
     public AudioClip audioLightningStart;
     public AudioClip audioLightningLoop;
@@ -40,26 +41,27 @@ public class ThirdPersonMovement : MonoBehaviour
     public AudioClip audioPotionPickUp;
     public AudioClip audioDeath;
     public AudioClip audioHit;
-
-    //sound effect fireball
     public AudioClip audioFireball;
 
-    //public GameObject healthBar;
-
-    public string CurrentSpell { get; set; } = "lightning";
-    private bool isFiring = false;
-    private GameObject lightning;
-    public GameObject lightningPrefab;
-
-    private bool takingDamage = false;
+    // UI variables
     public GameObject textMesh;
     private TextMeshProUGUI goStartText;
 
+    // Spell variables
+    public string CurrentSpell { get; set; } = "lightning";
+    private bool isFiring = false;
+    public float currentSpellCost = 10f;
+    private GameObject lightning;
+    public GameObject lightningPrefab;
+
+    // Damage variables
+    private bool takingDamage = false;
+
+    // Player state enum
     private enum PlayerState
     {
         starting, idle, walking, running, casting, dying, dead
     }
-
     private PlayerState _playerState = PlayerState.starting;
 
     // Start is called before the first frame update
@@ -71,12 +73,13 @@ public class ThirdPersonMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-        _previousPosition = characterController.transform.position;
+        // Store previous position for animation purposes
+        Vector3 _previousPosition = characterController.transform.position;
 
         switch (_playerState)
         {
             case PlayerState.starting:
+                // Show start text and wait for fire button press
                 if (goStartText == null)
                 {
                     goStartText = textMesh.GetComponent<TextMeshProUGUI>();
@@ -92,26 +95,25 @@ public class ThirdPersonMovement : MonoBehaviour
                 break;
 
             case PlayerState.dying:
+                // Handle dying state
                 break;
 
             default:
+                // Apply gravity, movement, animation, and check for spell casting
                 ApplyGravity();
                 ApplyMovement();
                 ApplyAnimation();
                 CheckSpell();
                 CheckCast();
 
-                //is player taking damage
+                // Check if player is taking damage
                 if (takingDamage)
                     GameController.Instance.TakeDamage(10f * Time.deltaTime);
                 break;
         }
-
-
-
     }
 
-
+    // Apply gravity to the character controller
     void ApplyGravity()
     {
         if (characterController.isGrounded && _velocity < 0f)
@@ -127,6 +129,7 @@ public class ThirdPersonMovement : MonoBehaviour
         characterController.Move(_direction);
     }
 
+    // Apply movement to the character controller
     void ApplyMovement()
     {
         float horizontal = Input.GetAxisRaw("Horizontal");
@@ -144,6 +147,7 @@ public class ThirdPersonMovement : MonoBehaviour
         }
     }
 
+    // Apply animation based on character movement
     void ApplyAnimation()
     {
         if (characterController.transform.position == _previousPosition)
@@ -163,6 +167,7 @@ public class ThirdPersonMovement : MonoBehaviour
         }
     }
 
+    // Check for spell selection
     void CheckSpell()
     {
         if (Input.GetKeyUp(KeyCode.Alpha1))
@@ -175,19 +180,7 @@ public class ThirdPersonMovement : MonoBehaviour
         }
     }
 
-    /*
-    void ApplySpell()
-    {
-        if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
-        {
-            animator.SetBool("isWalking", false);
-            animator.SetBool("isRunning", false);
-            animator.SetBool("isIdling", true);
-            _playerState = PlayerState.idle;
-        }
-    }
-    */
-
+    // Check for spell casting
     void CheckCast()
     {
         if (GameController.Instance.magika < currentSpellCost)
@@ -204,10 +197,6 @@ public class ThirdPersonMovement : MonoBehaviour
                 {
                     isFiring = true;
                     animator.SetBool("IsLighting", true);
-
-                    //animator.SetTrigger("isShooting");
-                    //animator.SetLayerWeight(1, 1);
-
                 }
             }
             else
@@ -217,16 +206,12 @@ public class ThirdPersonMovement : MonoBehaviour
                     isFiring = false;
                     animator.SetBool("IsLighting", false);
                     PlayLightningEnd();
-                    //animator.SetLayerWeight(1, 0);
-
                     Destroy(lightning);
                     lightning = null;
                 }
                 else if (lightning is not null && !audioSource.isPlaying)
                 {
-
                     PlayLightningLoop();
-
                 }
             }
         }
@@ -256,6 +241,7 @@ public class ThirdPersonMovement : MonoBehaviour
         }
     }
 
+    // Handle trigger collisions
     private void OnTriggerEnter(Collider other)
     {
         switch (other.gameObject.tag.ToLower())
@@ -296,9 +282,9 @@ public class ThirdPersonMovement : MonoBehaviour
                 }
                 break;
         }
-
     }
 
+    // Handle trigger exit collisions
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Enemy"))
@@ -307,6 +293,7 @@ public class ThirdPersonMovement : MonoBehaviour
         }
     }
 
+    // Show lightning effect
     public void ShowLightning()
     {
         if (isFiring)
@@ -315,9 +302,9 @@ public class ThirdPersonMovement : MonoBehaviour
             lightning.transform.SetParent(lightningPoint.transform, false);
             PlayLightningStart();
         }
-
     }
 
+    // Play lightning start sound effect
     private void PlayLightningStart()
     {
         audioSource.clip = audioLightningStart;
@@ -325,6 +312,7 @@ public class ThirdPersonMovement : MonoBehaviour
         audioSource.Play();
     }
 
+    // Play lightning end sound effect
     private void PlayLightningEnd()
     {
         audioSource.clip = audioLightningEnd;
@@ -332,6 +320,7 @@ public class ThirdPersonMovement : MonoBehaviour
         audioSource.Play();
     }
 
+    // Play lightning loop sound effect
     private void PlayLightningLoop()
     {
         audioSource.clip = audioLightningLoop;
@@ -339,6 +328,7 @@ public class ThirdPersonMovement : MonoBehaviour
         audioSource.Play();
     }
 
+    // Handle player death
     public void Death()
     {
         _playerState = PlayerState.dying;
@@ -348,9 +338,9 @@ public class ThirdPersonMovement : MonoBehaviour
             Destroy(lightning);
         }
         animator.SetBool("isDead", true);
-
     }
 
+    // Handle witch death
     public void WitchDeath()
     {
         animator.SetBool("isLaying", true);
@@ -359,27 +349,16 @@ public class ThirdPersonMovement : MonoBehaviour
         audioSource.Play();
     }
 
+    // Handle game over
     public void GameOver()
     {
-        //gameOverLoop++;
-       // if (gameOverLoop > 1)
-        //{
-            ResetPlayer();
-            _playerState = PlayerState.starting;
-            
-        //}
-
+        ResetPlayer();
+        _playerState = PlayerState.starting;
     }
 
+    // Reset player state and position
     private void ResetPlayer()
     {
-        /*
-         reset health
-        reset player position 
-        reset magika
-        remove key
-
-         */
         animator.SetBool("isLaying", false);
         audioSource.Stop();
         isFiring = false;
@@ -392,10 +371,5 @@ public class ThirdPersonMovement : MonoBehaviour
         animator.SetBool("isRunning", false);
         animator.SetBool("IsLightning", false);
         animator.SetBool("isIdle", true);
-        
-        
     }
 }
-
-
-
