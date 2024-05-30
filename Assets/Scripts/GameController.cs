@@ -11,6 +11,7 @@ public class GameController : MonoBehaviour
     public GameObject greenKeyUI;
     public GameObject magikaBar;
     public GameObject healthBar;
+    
 
     // required for spells
     public GameObject player;
@@ -51,10 +52,7 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        
-    }
+
 
     public void PickUpKey(string key)
     {

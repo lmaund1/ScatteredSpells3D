@@ -15,6 +15,9 @@ public class SkeletonController : MonoBehaviour
     public LayerMask playerMask;
     public int health = 100;
     public GameObject enemyHealthBar;
+    public AudioClip audioHit;
+
+    private AudioSource audioSource;
     private EnemyHealthBar enemyHealthController;
     private int currentHealth;
 
@@ -34,6 +37,7 @@ public class SkeletonController : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         enemyHealthController = enemyHealthBar.GetComponent<EnemyHealthBar>();
+        audioSource = GetComponent<AudioSource>();
 
         currentHealth = health;
 
@@ -111,7 +115,9 @@ public class SkeletonController : MonoBehaviour
                 if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !animator.IsInTransition(0))
                 {
                     ChangeState(SkeletonState.engaging);
-
+                    audioSource.clip = audioHit;
+                    audioSource.loop = false;
+                    audioSource.Play();
                 }
                 break;
 

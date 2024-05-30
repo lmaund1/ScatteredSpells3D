@@ -37,6 +37,9 @@ public class ThirdPersonMovement : MonoBehaviour
     public AudioClip audioLightningStart;
     public AudioClip audioLightningLoop;
     public AudioClip audioLightningEnd;
+    public AudioClip audioPotionPickUp;
+    public AudioClip audioDeath;
+    public AudioClip audioHit;
 
     //sound effect fireball
     public AudioClip audioFireball;
@@ -259,6 +262,9 @@ public class ThirdPersonMovement : MonoBehaviour
         {
             case "enemy":
                 takingDamage = true;
+                audioSource.clip = audioHit;
+                audioSource.loop = false;
+                audioSource.Play();
                 break;
 
             case "greenkey":
@@ -270,6 +276,9 @@ public class ThirdPersonMovement : MonoBehaviour
                 HealthPotionController healthPotionController = other.gameObject.GetComponent<HealthPotionController>();
                 if (GameController.Instance.health < GameController.Instance.maxHealth)
                 {
+                    audioSource.clip = audioPotionPickUp;
+                    audioSource.loop = false;
+                    audioSource.Play();
                     GameController.Instance.RestoreHealth(healthPotionController.healthBoost);
                     Destroy(other.gameObject);
                 }
@@ -279,6 +288,9 @@ public class ThirdPersonMovement : MonoBehaviour
                 MagikaPotionController magikaPotionController = other.gameObject.GetComponent<MagikaPotionController>();
                 if (GameController.Instance.magika < GameController.Instance.maxMagika)
                 {
+                    audioSource.clip = audioPotionPickUp;
+                    audioSource.loop = false;
+                    audioSource.Play();
                     GameController.Instance.RestoreMagika(magikaPotionController.magikaBoost);
                     Destroy(other.gameObject);
                 }
@@ -336,11 +348,15 @@ public class ThirdPersonMovement : MonoBehaviour
             Destroy(lightning);
         }
         animator.SetBool("isDead", true);
+
     }
 
     public void WitchDeath()
     {
         animator.SetBool("isLaying", true);
+        audioSource.clip = audioDeath;
+        audioSource.loop = false;
+        audioSource.Play();
     }
 
     public void GameOver()
